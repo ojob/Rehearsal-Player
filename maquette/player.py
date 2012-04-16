@@ -1,6 +1,24 @@
 # player.py
 
-import wx
+import wx, os
+
+def r(filename):
+    """Returns resource folder"""
+    script_location = os.path.dirname(__file__)
+    one_level_upper = os.path.normpath(os.path.join(script_location, '..'))
+    p = ''
+    if 'icons' in os.listdir(script_location):
+        p = script_location
+    elif 'icons' in os.listdir(one_level_upper):
+        p = one_level_upper
+    else:
+        pass # no path found
+    
+    if not p:
+        raise OSError("Could not find resource folder")
+    else:
+        return os.path.join(p, filename)
+    
 
 class MyFrame(wx.Frame):
     def __init__(self, *args, **kwargs):
@@ -48,13 +66,9 @@ class FileMenu(wx.Menu):
     def __init__(self, *args, **kwargs):
         wx.Menu.__init__(self, *args, **kwargs)
         
-        open_menu = wx.MenuItem(self, wx.ID_OPEN, "&Open", "Open project")
-        open_menu.SetBitmap(wx.Bitmap('icons/document-new.png'))
-        self.AppendItem(open_menu)
-        
-        save = wx.MenuItem(self, wx.ID_OPEN, "&Save", "Save project")
-        save.SetBitmap(wx.Bitmap('icons/document-save.png'))
-        self.AppendItem(save)
+        self.Append(wx.ID_NEW,  "&New",  "Create new project")
+        self.Append(wx.ID_OPEN, "&Open", "Open Project")
+        self.Append(wx.ID_SAVE, "&Save", "Save Project")
         
         self.AppendSeparator()
         self.Append(wx.ID_EXIT, "&Quit", "Quit application")
@@ -85,14 +99,15 @@ class MyStatusBar(wx.StatusBar):
 class MyToolBar(wx.ToolBar):
     def __init__(self, *args, **kwargs):
         wx.ToolBar.__init__(self, *args, **kwargs)
-        self.AddSimpleTool(wx.ID_NEW, wx.Bitmap('icons/document-new.png'), "New", "Create new project")
-        self.AddSimpleTool(wx.ID_OPEN, wx.Bitmap('icons/document-open.png'), "New", "Open existing project")
-        self.AddSimpleTool(wx.ID_SAVE, wx.Bitmap('icons/document-save.png'), "Save", "Save to filesystem")
+        self.AddSimpleTool(wx.ID_NEW, wx.Bitmap(r('icons/document-new.png')), "New", "Create new project")
+        self.AddSimpleTool(wx.ID_OPEN, wx.Bitmap(r('icons/document-open.png')), "New", "Open existing project")
+        self.AddSimpleTool(wx.ID_SAVE, wx.Bitmap(r('icons/document-save.png')), "Save", "Save to filesystem")
+        self.AddSimpleTool(wx.ID_SAVE, wx.Bitmap(r('icons/document-save.png')), "AutoSave", "Auto save", True)
         self.AddSeparator()
-        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap('icons/edit-undo.png'), "Undo", "Cancel action")
-        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap('icons/edit-redo.png'), "Undo", "Redo action")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/edit-undo.png')), "Undo", "Cancel action")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/edit-redo.png')), "Undo", "Redo action")
         self.AddSeparator()
-        self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap('icons/system-log-out.png'), "Exit", "Exit RP")
+        self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap(r('icons/system-log-out.png')), "Exit", "Exit RP")
         self.Realize()
 
 class ViewZone(wx.Panel):
@@ -106,11 +121,11 @@ class ControlZone(wx.Panel):
         
         # building components
         slider1 = wx.Slider(self, -1, 0, 0, 1000)
-        pause = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-new.png'))
-        play  = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-save.png'))
-        nextB  = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-new.png'))
-        prev  = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-save.png'))
-        volume = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-new.png'))
+        pause = wx.BitmapButton(self, -1, wx.Bitmap(r('icons/document-new.png')))
+        play  = wx.BitmapButton(self, -1, wx.Bitmap(r('icons/document-save.png')))
+        nextB  = wx.BitmapButton(self, -1, wx.Bitmap(r('icons/document-new.png')))
+        prev  = wx.BitmapButton(self, -1, wx.Bitmap(r('icons/document-save.png')))
+        volume = wx.BitmapButton(self, -1, wx.Bitmap(r('icons/document-new.png')))
         slider2 = wx.Slider(self, -1, 0, 0, 100, size=(120, -1))
 
         # positioning them around

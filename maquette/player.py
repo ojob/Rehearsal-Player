@@ -3,8 +3,8 @@
 import wx
 
 class MyFrame(wx.Frame):
-    def __init__(self, parent, id, title):
-        wx.Frame.__init__(self, parent, id, title, size=(350, 300))
+    def __init__(self, *args, **kwargs):
+        wx.Frame.__init__(self, *args, **kwargs)
         
         self.SetMinSize((350, 300))
         
@@ -48,12 +48,12 @@ class FileMenu(wx.Menu):
     def __init__(self, *args, **kwargs):
         wx.Menu.__init__(self, *args, **kwargs)
         
-        open = wx.MenuItem(self, wx.ID_OPEN, "&Open", "Open project")
-        open.SetBitmap(wx.Bitmap('icons/new.png'))
-        self.AppendItem(open)
+        open_menu = wx.MenuItem(self, wx.ID_OPEN, "&Open", "Open project")
+        open_menu.SetBitmap(wx.Bitmap('icons/document-new.png'))
+        self.AppendItem(open_menu)
         
         save = wx.MenuItem(self, wx.ID_OPEN, "&Save", "Save project")
-        save.SetBitmap(wx.Bitmap('icons/save.png'))
+        save.SetBitmap(wx.Bitmap('icons/document-save.png'))
         self.AppendItem(save)
         
         self.AppendSeparator()
@@ -85,10 +85,14 @@ class MyStatusBar(wx.StatusBar):
 class MyToolBar(wx.ToolBar):
     def __init__(self, *args, **kwargs):
         wx.ToolBar.__init__(self, *args, **kwargs)
-        self.AddSimpleTool(wx.ID_NEW, wx.Image('icons/new.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "New", "Create new project")
-        self.AddSimpleTool(wx.ID_SAVE, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Save", "Save to filesystem")
+        self.AddSimpleTool(wx.ID_NEW, wx.Bitmap('icons/document-new.png'), "New", "Create new project")
+        self.AddSimpleTool(wx.ID_OPEN, wx.Bitmap('icons/document-open.png'), "New", "Open existing project")
+        self.AddSimpleTool(wx.ID_SAVE, wx.Bitmap('icons/document-save.png'), "Save", "Save to filesystem")
         self.AddSeparator()
-        self.AddSimpleTool(wx.ID_EXIT, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Exit", "Exit RP")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap('icons/edit-undo.png'), "Undo", "Cancel action")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap('icons/edit-redo.png'), "Undo", "Redo action")
+        self.AddSeparator()
+        self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap('icons/system-log-out.png'), "Exit", "Exit RP")
         self.Realize()
 
 class ViewZone(wx.Panel):
@@ -102,11 +106,11 @@ class ControlZone(wx.Panel):
         
         # building components
         slider1 = wx.Slider(self, -1, 0, 0, 1000)
-        pause = wx.BitmapButton(self, -1, wx.Bitmap('icons/new.png'))
-        play  = wx.BitmapButton(self, -1, wx.Bitmap('icons/save.png'))
-        next  = wx.BitmapButton(self, -1, wx.Bitmap('icons/new.png'))
-        prev  = wx.BitmapButton(self, -1, wx.Bitmap('icons/save.png'))
-        volume = wx.BitmapButton(self, -1, wx.Bitmap('icons/new.png'))
+        pause = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-new.png'))
+        play  = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-save.png'))
+        nextB  = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-new.png'))
+        prev  = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-save.png'))
+        volume = wx.BitmapButton(self, -1, wx.Bitmap('icons/document-new.png'))
         slider2 = wx.Slider(self, -1, 0, 0, 100, size=(120, -1))
 
         # positioning them around
@@ -116,7 +120,7 @@ class ControlZone(wx.Panel):
         hbox2 = wx.BoxSizer(wx.HORIZONTAL)
         hbox2.Add(pause)
         hbox2.Add(play, flag=wx.RIGHT, border=5)
-        hbox2.Add(next, flag=wx.LEFT, border=5)
+        hbox2.Add(nextB, flag=wx.LEFT, border=5)
         hbox2.Add(prev)
         hbox2.Add((150, -1), 1, flag=wx.EXPAND | wx.ALIGN_RIGHT)
         hbox2.Add(volume, flag=wx.ALIGN_RIGHT)

@@ -5,48 +5,109 @@ import wx
 class MyFrame(wx.Frame):
     def __init__(self, parent, id, title):
         wx.Frame.__init__(self, parent, id, title, size=(350, 300))
-        #panel = wx.Panel(self, -1)
         
-        #------------------------------------------------ building menu bar
+        self.SetMinSize((350, 300))
+        
+        #------------------------------------- building menu and status bar
         menubar = MyMenuBar()
-        
-        #---------------------------------------------- building status bar
-        status = wx.StatusBar(self, wx.ID_ANY)
-        status.SetFieldsCount(3)
-        status.SetStatusWidths([-1, 60, 60])
-        self.SetStatusBar(status)
+        self.SetMenuBar(menubar)
+        statusbar = MyStatusBar(self, wx.ID_ANY)
+        self.SetStatusBar(statusbar)
 
-        #----------------------------------------------- building toolbar 1
-        toolbar = wx.ToolBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
-        toolbar.AddSimpleTool(1, wx.Image('icons/new.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "New", "Create new project")
-        toolbar.AddSimpleTool(2, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Save", "Save to filesystem")
-        toolbar.AddSeparator()
-        toolbar.AddSimpleTool(3, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Save", "Save to filesystem")
-        toolbar.Realize()
-        
-        #----------------------------------------------- building toolbar 2
-        toolbar2 = wx.ToolBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
-        toolbar2.AddSimpleTool(1, wx.Image('icons/new.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "New", "Create new project")
-        toolbar2.AddSimpleTool(2, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Save", "Save to filesystem")
-        toolbar2.AddSeparator()
-        toolbar2.AddSimpleTool(3, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Save", "Save to filesystem")
-        toolbar2.Realize()
-        
-        #-------------------------------------------------------- main view
-        pnl1 = wx.Panel(self, -1)
-        pnl1.SetBackgroundColour(wx.BLACK)
-        
-        #----------------------------------------------------- control zone
+        #--------------------------------------------------- adding content
         # building components
-        pnl2 = wx.Panel(self, -1 )
-                
-        slider1 = wx.Slider(pnl2, -1, 0, 0, 1000)
-        pause = wx.BitmapButton(pnl2, -1, wx.Bitmap('icons/new.png'))
-        play  = wx.BitmapButton(pnl2, -1, wx.Bitmap('icons/save.png'))
-        next  = wx.BitmapButton(pnl2, -1, wx.Bitmap('icons/new.png'))
-        prev  = wx.BitmapButton(pnl2, -1, wx.Bitmap('icons/save.png'))
-        volume = wx.BitmapButton(pnl2, -1, wx.Bitmap('icons/new.png'))
-        slider2 = wx.Slider(pnl2, -1, 0, 0, 100, size=(120, -1))
+        toolbar = MyToolBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
+        viewzone = ViewZone(self, wx.ID_ANY)
+        controlzone = ControlZone(self, wx.ID_ANY)
+
+        # positioning them around
+        sizer = wx.BoxSizer(wx.VERTICAL)
+        sizer.Add(toolbar, 0, flag=wx.EXPAND|wx.TOP)
+        sizer.Add(viewzone, 1, flag=wx.EXPAND)
+        sizer.Add(controlzone, flag=wx.EXPAND | wx.BOTTOM | wx.TOP)
+        self.SetSizer(sizer)
+        
+        #------------------------------------------------ bindings creation
+        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
+        self.Bind(wx.EVT_TOOL, self.OnExit, id=wx.ID_EXIT)
+        
+    def OnExit(self, ev):
+        self.Close()
+        
+class MyMenuBar(wx.MenuBar):
+    """Custom menu bar"""
+    def __init__(self, *args, **kwargs):
+        wx.MenuBar.__init__(self, *args, **kwargs)
+        
+        self.Append(FileMenu(), '&File')
+        self.Append(EditMenu(), '&Edit')
+        self.Append(HelpMenu(), '&Help')
+
+class FileMenu(wx.Menu):
+    """Custom File Menu"""
+    def __init__(self, *args, **kwargs):
+        wx.Menu.__init__(self, *args, **kwargs)
+        
+        open = wx.MenuItem(self, wx.ID_OPEN, "&Open", "Open project")
+        open.SetBitmap(wx.Bitmap('icons/new.png'))
+        self.AppendItem(open)
+        
+        save = wx.MenuItem(self, wx.ID_OPEN, "&Save", "Save project")
+        save.SetBitmap(wx.Bitmap('icons/save.png'))
+        self.AppendItem(save)
+        
+        self.AppendSeparator()
+        self.Append(wx.ID_EXIT, "&Quit", "Quit application")
+        
+class EditMenu(wx.Menu):
+    """Custom Edit menu"""
+    def __init__(self, *args, **kwargs):
+        wx.Menu.__init__(self, *args, **kwargs)
+        self.Append(wx.ID_UNDO, "&Undo", "Cancel last action")
+        self.Append(wx.ID_REDO, "&Redo", "Redo cancelled action")
+        self.AppendSeparator()
+        self.Append(wx.ID_PROPERTIES, "&Properties", "Edit project properties")
+        
+class HelpMenu(wx.Menu):
+    """Custom Help Menu"""
+    def __init__(self, *args, **kwargs):
+        wx.Menu.__init__(self, *args, **kwargs)
+        self.Append(wx.ID_HELP,  "&Contents", "Help on RP usage")
+        self.AppendSeparator()
+        self.Append(wx.ID_ABOUT, "&About", "About Rehersal Player")
+
+class MyStatusBar(wx.StatusBar):
+    def __init__(self, *args, **kwargs):
+        wx.StatusBar.__init__(self, *args, **kwargs)
+        self.SetFieldsCount(3)
+        self.SetStatusWidths([-1, 60, 60])
+     
+class MyToolBar(wx.ToolBar):
+    def __init__(self, *args, **kwargs):
+        wx.ToolBar.__init__(self, *args, **kwargs)
+        self.AddSimpleTool(wx.ID_NEW, wx.Image('icons/new.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "New", "Create new project")
+        self.AddSimpleTool(wx.ID_SAVE, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Save", "Save to filesystem")
+        self.AddSeparator()
+        self.AddSimpleTool(wx.ID_EXIT, wx.Image('icons/save.png', wx.BITMAP_TYPE_PNG).ConvertToBitmap(), "Exit", "Exit RP")
+        self.Realize()
+
+class ViewZone(wx.Panel):
+    def __init__(self, *args, **kwargs):
+        wx.Panel.__init__(self, *args, **kwargs)
+        self.SetBackgroundColour(wx.BLACK)
+        
+class ControlZone(wx.Panel):
+    def __init__(self, *args, **kwargs):
+        wx.Panel.__init__(self, *args, **kwargs)
+        
+        # building components
+        slider1 = wx.Slider(self, -1, 0, 0, 1000)
+        pause = wx.BitmapButton(self, -1, wx.Bitmap('icons/new.png'))
+        play  = wx.BitmapButton(self, -1, wx.Bitmap('icons/save.png'))
+        next  = wx.BitmapButton(self, -1, wx.Bitmap('icons/new.png'))
+        prev  = wx.BitmapButton(self, -1, wx.Bitmap('icons/save.png'))
+        volume = wx.BitmapButton(self, -1, wx.Bitmap('icons/new.png'))
+        slider2 = wx.Slider(self, -1, 0, 0, 100, size=(120, -1))
 
         # positioning them around
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
@@ -64,54 +125,11 @@ class MyFrame(wx.Frame):
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(hbox1, 1, wx.EXPAND | wx.BOTTOM, 10)
         vbox.Add(hbox2, 1, wx.EXPAND)
-        pnl2.SetSizer(vbox)
-
-        #----------------------------------- positioning in top-level frame
-        sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(toolbar, 0, flag=wx.EXPAND|wx.TOP)
-        sizer.Add(toolbar2, 0, flag=wx.EXPAND|wx.TOP)
-        sizer.Add(pnl1, 1, flag=wx.EXPAND)
-        sizer.Add(pnl2, flag=wx.EXPAND | wx.BOTTOM | wx.TOP)
-
-        #------------------------------------------------ top-level characs
-        self.SetMinSize((350, 300))
-        self.SetMenuBar(menubar)
-        
-        self.SetSizer(sizer)
-        self.Centre()
-    
-        #------------------------------------------------ bindings creation
-        self.Bind(wx.EVT_MENU, self.OnExit, id=wx.ID_EXIT)
-        
-    def OnExit(self, ev):
-        self.Close()
-        
-class MyMenuBar(wx.MenuBar):
-    def __init__(self, *args, **kwargs):
-        wx.MenuBar.__init__(self, *args, **kwargs)
-        
-        # top-level menus
-        file = wx.Menu()
-        play = wx.Menu()
-        view = wx.Menu()
-        tools = wx.Menu()
-        favorites = wx.Menu()
-        help = wx.Menu()
-
-        # filling menus
-        file.Append(wx.ID_EXIT, '&quit', 'Quit application')
-        
-        # adding menus to the menu bar
-        self.Append(file, '&File')
-        self.Append(play, '&Play')
-        self.Append(view, '&View')
-        self.Append(tools, '&Tools')
-        self.Append(favorites, 'F&avorites')
-        self.Append(help, '&Help')
+        self.SetSizer(vbox)
         
 class MyApp(wx.App):
     def OnInit(self):
-        frame = MyFrame(None, -1, 'Player')
+        frame = MyFrame(None, wx.ID_ANY, 'Rehearsal Player')
         frame.Show(True)
         self.SetTopWindow(frame)
         return True

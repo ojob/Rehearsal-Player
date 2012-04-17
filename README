@@ -1,4 +1,4 @@
-= RehearsalPlayer ReadMe
+# RehearsalPlayer ReadMe
 
 This player, named "Rehearsal Player", aims at helping dancers during their 
 looong hours of rehearsal, by providing a dedicated interface to play part 
@@ -17,5 +17,3 @@ Chapters are already part of mkv container format, which may contain all
 common media filetypes. This player then bring a playing capacity of using
 them easily, and an editing capacity of the chapters; one interesting side-
 effect is that the media file is still readable by any decent media player.
-
-Features list: see ROADMAP.txt file.

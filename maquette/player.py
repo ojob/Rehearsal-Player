@@ -6,6 +6,11 @@ import wx, os
 ID_AUTOSAVE = wx.NewId()
 ID_TOGGLE_TOOL_BAR = wx.NewId()
 ID_TOGGLE_STATUS_BAR = wx.NewId()
+ID_SPEED = wx.NewId()
+
+ID_TIMELINE = wx.NewId()
+ID_ADD_TICK = wx.NewId()
+ID_RM_TICK  = wx.NewId()
 
 
 def r(filename):
@@ -30,10 +35,12 @@ class MyFrame(wx.Frame):
     def __init__(self, *args, **kwargs):
         wx.Frame.__init__(self, *args, **kwargs)
         
-        self.SetMinSize((350, 300))
+        self.SetSize((350, 350))
+        self.SetMinSize((350, 350))
         
         self.autosave = False
         self.show_statusbar = True
+        self.ticks = []
         self.SetFocus()
         
         #------------------------------------- building menu and status bar
@@ -45,14 +52,16 @@ class MyFrame(wx.Frame):
         #--------------------------------------------------- adding content
         # building components
         self.toolbar = MyToolBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
-        controlzone = ControlZone(self, wx.ID_ANY)
-        viewzone = ViewZone(self, wx.ID_ANY)
+        self.controlzone = ControlZone(self, wx.ID_ANY)
+        self.chapterbar = ChapterBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
+        self.list = ChapterList(self, wx.ID_ANY, style=wx.LC_REPORT|wx.LC_VRULES)
         
         # positioning them around
         sizer = wx.BoxSizer(wx.VERTICAL)
-        sizer.Add(self.toolbar, 0, flag=wx.EXPAND|wx.TOP)
-        sizer.Add(controlzone, flag=wx.EXPAND | wx.BOTTOM | wx.TOP)
-        sizer.Add(viewzone, 1, flag=wx.EXPAND)
+        sizer.Add(self.toolbar)
+        sizer.Add(self.controlzone, flag=wx.EXPAND | wx.BOTTOM | wx.TOP)
+        sizer.Add(self.chapterbar, 0, flag=wx.EXPAND|wx.TOP)
+        sizer.Add(self.list, 1, flag=wx.EXPAND)
         self.SetSizer(sizer)
         
         #--------------------------------------------- initializing content
@@ -75,11 +84,16 @@ class MyFrame(wx.Frame):
         # display settings
         self.Bind(wx.EVT_MENU, self.ToggleToolBar, id=ID_TOGGLE_TOOL_BAR)
         self.Bind(wx.EVT_MENU, self.ToggleStatusBar, id=ID_TOGGLE_STATUS_BAR)
-        self.Bind(wx.EVT_TOOL, self.ToggleToolBar, id=ID_TOGGLE_TOOL_BAR)
-        self.Bind(wx.EVT_TOOL, self.ToggleStatusBar, id=ID_TOGGLE_STATUS_BAR)
+        
+        # add/remove ticks
+        self.Bind(wx.EVT_TOOL, self.AddTick, id=ID_ADD_TICK)
+        self.Bind(wx.EVT_TOOL, self.RmTick, id=ID_RM_TICK)
+        
+        # link chapter selection to timeline position
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.ChapterSelect, id=self.list.GetId())
         
         # 
-        self.Bind(wx.EVT_SPINCTRL, self.OnSpin, id=10000)
+        self.Bind(wx.EVT_SPINCTRL, self.OnSpin, id=ID_SPEED)
         
     def OnSpin(self, ev):
         print "Spin"
@@ -125,6 +139,43 @@ class MyFrame(wx.Frame):
             m.Toggle()
         
         self.toolbar.ToggleTool(ID_TOGGLE_STATUS_BAR, self.show_statusbar)
+    
+    def AddTick(self, ev):
+        # retrieve timeline position
+        t = self.controlzone.timeline.GetValue()
+        print t
+        # add tick to timeline and to list
+        self.controlzone.timeline.SetTick(t)
+        self.ticks.append(t)
+        
+        # display in list
+        n = self.list.GetItemCount()
+        self.list.InsertStringItem(n, str(t))
+        self.list.SetStringItem(n, 1, "Some Text")
+        
+    def RmTick(self, ev):
+        # retrieve timeline position
+        t = self.controlzone.timeline.GetValue()
+        print t
+        # remove associated tick from list
+        self.ticks = []
+        
+        # refresh ticks drawing
+        self.controlzone.timeline.ClearTicks()
+        self.controlzone.timeline.SetTickFreq(10)
+        for t in self.ticks:
+            self.controlzone.timeline.SetTick(t)
+    
+    def ChapterSelect(self, ev):
+        # retrieve chapter timeline
+        idx = self.list.GetFocusedItem()
+        if idx == -1:
+            # failure case, with no selection
+            return
+        t = int(self.list.GetItem(idx, 0).GetText())
+        # move slider to time
+        self.controlzone.timeline.SetValue(t)
+    
     
 class MyMenuBar(wx.MenuBar):
     """Custom menu bar"""
@@ -196,58 +247,86 @@ class MyToolBar(wx.ToolBar):
     def __init__(self, *args, **kwargs):
         wx.ToolBar.__init__(self, *args, **kwargs)
         
-        self.AddSimpleTool(wx.ID_NEW, wx.Bitmap(r('icons/document-new.png')), "New", "Create new project")
-        self.AddSimpleTool(wx.ID_OPEN, wx.Bitmap(r('icons/document-open.png')), "New", "Open existing project")
         self.AddSimpleTool(wx.ID_SAVE, wx.Bitmap(r('icons/document-save.png')), "Save", "Save to filesystem")
         self.autosave = self.AddSimpleTool(ID_AUTOSAVE, wx.Bitmap(r('icons/document-save.png')), "AutoSave", "Auto save", True)
         self.AddSeparator()
         self.AddSimpleTool(wx.ID_UNDO, wx.Bitmap(r('icons/edit-undo.png')), "Undo", "Cancel action")
         self.AddSimpleTool(wx.ID_REDO, wx.Bitmap(r('icons/edit-redo.png')), "Undo", "Redo action")
         self.AddSeparator()
-        self.show_statusbar = self.AddSimpleTool(ID_TOGGLE_STATUS_BAR, wx.Bitmap(r('icons/list-add.png')), "Show/Hide", "Status bar toggling", True)
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-start.png')), "Play")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-pause.png')), "Pause")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-stop.png')), "Stop")
         self.AddSeparator()
         self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap(r('icons/system-log-out.png')), "Exit", "Exit RP")
         self.Realize()
         
+class QuitBar(wx.ToolBar):
+    def __init__(self, *args, **kwargs):
+        wx.ToolBar.__init__(self, *args, **kwargs)
+        
+        self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap(r('icons/system-log-out.png')), "Exit", "Exit RP")
+        self.Realize()
+        
+class ChapterBar(wx.ToolBar):
+    def __init__(self, *args, **kwargs):
+        wx.ToolBar.__init__(self, *args, **kwargs)
+        
+        self.AddSimpleTool(ID_ADD_TICK, wx.Bitmap(r('icons/list-add.png')), "Add Chapter")
+        self.AddSimpleTool(ID_RM_TICK, wx.Bitmap(r('icons/list-remove.png')), "Remove Chapter")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/go-previous.png')), "Previous chapter")
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/go-next.png')), "Next chapter")
+        self.Realize()
+        
 class ViewZone(wx.Panel):
     def __init__(self, *args, **kwargs):
-        wx.Panel.__init__(self, *args, **kwargs)
+        wx.Panel.__init__(self, *args, style=wx.LC_REPORT, **kwargs)
         self.SetBackgroundColour(wx.BLACK)
         
+class ChapterList(wx.ListCtrl):
+    def __init__(self, *args, **kwargs):
+        wx.ListCtrl.__init__(self, *args, **kwargs)
+        
+        # define columns headers
+        self.InsertColumn(0, "Time")
+        self.InsertColumn(1, "Chapter Name")
+        
+        self.SetColumnWidth(0, 40)
+        self.SetColumnWidth(1, 300)
+
+
 class ControlZone(wx.Panel):
     def __init__(self, *args, **kwargs):
         wx.Panel.__init__(self, *args, **kwargs)
         
-        # create container for all this stuff
-        box = wx.StaticBox(self, wx.ID_ANY, "Controls")
-        
         # building components
-        slider1 = wx.Slider(self, wx.ID_ANY, 0, 0, 1000)
-        pause =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/media-playback-pause.png')))
-        play  =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/media-playback-start.png')))
-        stop  =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/media-playback-stop.png')))
-        nextB  =  wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/go-next.png')))
-        prev  =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/go-previous.png')))
-        slider2 = wx.Slider(self, wx.ID_ANY, 0, 0, 100, size=(120, -1))
-        spin    = wx.SpinCtrl(self, 10000, '0', size=(50, -1), min=0, max=10)
+        self.timeline = wx.Slider(self, ID_TIMELINE, 0, 0, 121, style=wx.SL_AUTOTICKS|wx.SL_LABELS|wx.SL_SELRANGE)
+        self.timeline.SetTickFreq(10)
+        
+        # pause =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/media-playback-pause.png')))
+        # play  =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/media-playback-start.png')))
+        # stop  =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/media-playback-stop.png')))
+        # prev  =   wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/go-previous.png')))
+        # nextB  =  wx.BitmapButton(self, wx.ID_ANY, wx.Bitmap(r('icons/go-next.png')))
+        # slider2 = wx.Slider(self, wx.ID_ANY, 0, 0, 100, size=(120, -1))
+        # spin    = wx.SpinCtrl(self, ID_SPEED, '0', size=(50, -1), min=0, max=10)
         
         # positioning them around
         hbox1 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox1.Add(slider1, 1)
+        hbox1.Add(self.timeline, 1)
         
-        hbox2 = wx.BoxSizer(wx.HORIZONTAL)
-        hbox2.Add(play)
-        hbox2.Add(pause)
-        hbox2.Add(stop, flag=wx.RIGHT, border=5)
-        hbox2.Add(prev, flag=wx.LEFT, border=5)
-        hbox2.Add(nextB)
-        hbox2.Add((150, -1), 1, flag=wx.EXPAND | wx.ALIGN_RIGHT)
-        hbox2.Add(slider2, flag=wx.ALIGN_RIGHT | wx.TOP | wx.LEFT, border=5)
-        hbox2.Add(spin)
+        # hbox2 = wx.BoxSizer(wx.HORIZONTAL)
+        # hbox2.Add(play)
+        # hbox2.Add(pause)
+        # hbox2.Add(stop, flag=wx.RIGHT, border=5)
+        # hbox2.Add(prev, flag=wx.LEFT, border=5)
+        # hbox2.Add(nextB)
+        # hbox2.Add((150, -1), 1, flag=wx.EXPAND | wx.ALIGN_RIGHT)
+        # hbox2.Add(slider2, flag=wx.ALIGN_RIGHT | wx.TOP | wx.LEFT, border=5)
+        # hbox2.Add(spin)
         
         vbox = wx.BoxSizer(wx.VERTICAL)
         vbox.Add(hbox1, 1, wx.EXPAND | wx.BOTTOM, 10)
-        vbox.Add(hbox2, 1, wx.EXPAND)
+        # vbox.Add(hbox2, 1, wx.EXPAND)
         self.SetSizer(vbox)
         
 class MyApp(wx.App):

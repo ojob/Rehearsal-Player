@@ -1,17 +1,20 @@
 # player.py
 
-import wx, os
+import wx
+import os
 
-# constants for IDs
+# constants for IDs4
 ID_AUTOSAVE = wx.NewId()
 ID_TOGGLE_TOOL_BAR = wx.NewId()
 ID_TOGGLE_STATUS_BAR = wx.NewId()
 ID_SPEED = wx.NewId()
 
 ID_TIMELINE = wx.NewId()
-ID_ADD_TICK = wx.NewId()
-ID_RM_TICK  = wx.NewId()
+ID_ADD_CHAPTER = wx.NewId()
+ID_RM_CHAPTER  = wx.NewId()
 
+ID_SET_START = wx.NewId()
+ID_SET_END = wx.NewId()
 
 def r(filename):
     """Returns resource folder"""
@@ -35,13 +38,16 @@ class MyFrame(wx.Frame):
     def __init__(self, *args, **kwargs):
         wx.Frame.__init__(self, *args, **kwargs)
         
-        self.SetSize((350, 350))
-        self.SetMinSize((350, 350))
+        self.SetSize((400, 350))
+        self.SetMinSize((400, 350))
         
         self.autosave = False
         self.show_statusbar = True
-        self.ticks = []
+        self.chapters = {}  # dict of (time, name) chapters
         self.SetFocus()
+        
+        self.start = ""
+        self.end = ""
         
         #------------------------------------- building menu and status bar
         self.menubar = MyMenuBar()
@@ -53,15 +59,20 @@ class MyFrame(wx.Frame):
         # building components
         self.toolbar = MyToolBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
         self.controlzone = ControlZone(self, wx.ID_ANY)
-        self.chapterbar = ChapterBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
-        self.list = ChapterList(self, wx.ID_ANY, style=wx.LC_REPORT|wx.LC_VRULES)
+        self.chapterbar = ChapterBar(self, wx.ID_ANY, style=wx.TB_VERTICAL)
+        self.listing = ChapterList(self, wx.ID_ANY, style=wx.LC_REPORT|wx.LC_VRULES)
         
         # positioning them around
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.toolbar)
         sizer.Add(self.controlzone, flag=wx.EXPAND | wx.BOTTOM | wx.TOP)
-        sizer.Add(self.chapterbar, 0, flag=wx.EXPAND|wx.TOP)
-        sizer.Add(self.list, 1, flag=wx.EXPAND)
+        
+        vb = wx.BoxSizer(wx.HORIZONTAL)
+        vb.Add(self.chapterbar, 0, flag=wx.EXPAND)
+        vb.Add(self.listing, 1, flag=wx.EXPAND)
+        sizer.Add(vb, 1, flag=wx.EXPAND)
+        #sizer.Add(self.chapterbar, 0, flag=wx.EXPAND|wx.TOP)
+        #sizer.Add(self.listing, 1, flag=wx.EXPAND)
         self.SetSizer(sizer)
         
         #--------------------------------------------- initializing content
@@ -85,15 +96,17 @@ class MyFrame(wx.Frame):
         self.Bind(wx.EVT_MENU, self.ToggleToolBar, id=ID_TOGGLE_TOOL_BAR)
         self.Bind(wx.EVT_MENU, self.ToggleStatusBar, id=ID_TOGGLE_STATUS_BAR)
         
-        # add/remove ticks
-        self.Bind(wx.EVT_TOOL, self.AddTick, id=ID_ADD_TICK)
-        self.Bind(wx.EVT_TOOL, self.RmTick, id=ID_RM_TICK)
+        # add/remove chapters
+        self.Bind(wx.EVT_TOOL, self.AddChapter, id=ID_ADD_CHAPTER)
+        self.Bind(wx.EVT_TOOL, self.RmChapter, id=ID_RM_CHAPTER)
+        
+        # start/end selection
+        self.Bind(wx.EVT_TOOL, self.SetStart, id=ID_SET_START)
+        self.Bind(wx.EVT_TOOL, self.SetEnd, id=ID_SET_END)
         
         # link chapter selection to timeline position
-        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.ChapterSelect, id=self.list.GetId())
+        self.Bind(wx.EVT_LIST_ITEM_SELECTED, self.ChapterSelect, id=self.listing.GetId())
         
-        # 
-        self.Bind(wx.EVT_SPINCTRL, self.OnSpin, id=ID_SPEED)
         
     def OnSpin(self, ev):
         print "Spin"
@@ -140,42 +153,54 @@ class MyFrame(wx.Frame):
         
         self.toolbar.ToggleTool(ID_TOGGLE_STATUS_BAR, self.show_statusbar)
     
-    def AddTick(self, ev):
+    def AddChapter(self, ev):
         # retrieve timeline position
         t = self.controlzone.timeline.GetValue()
-        print t
-        # add tick to timeline and to list
-        self.controlzone.timeline.SetTick(t)
-        self.ticks.append(t)
         
-        # display in list
-        n = self.list.GetItemCount()
-        self.list.InsertStringItem(n, str(t))
-        self.list.SetStringItem(n, 1, "Some Text")
+        # add in storage - dict ensures uniqueness
+        self.chapters[t] = "some chapter name"
+        print self.chapters
+        # display in listing
+        self.UpdateChapters()
         
-    def RmTick(self, ev):
+    def RmChapter(self, ev):
         # retrieve timeline position
         t = self.controlzone.timeline.GetValue()
-        print t
-        # remove associated tick from list
-        self.ticks = []
         
-        # refresh ticks drawing
-        self.controlzone.timeline.ClearTicks()
-        self.controlzone.timeline.SetTickFreq(10)
-        for t in self.ticks:
-            self.controlzone.timeline.SetTick(t)
+        # remove from storage - note that precision is possible through
+        # direct selection of the chapter in the listing.
+        if t in self.chapters:
+            del self.chapters[t]
+        
+            # display in listing
+            self.UpdateChapters()
+        else:
+            return
     
     def ChapterSelect(self, ev):
         # retrieve chapter timeline
-        idx = self.list.GetFocusedItem()
+        idx = self.listing.GetFocusedItem()
         if idx == -1:
             # failure case, with no selection
             return
-        t = int(self.list.GetItem(idx, 0).GetText())
+        t = int(self.listing.GetItem(idx, 0).GetText())
         # move slider to time
         self.controlzone.timeline.SetValue(t)
     
+    def UpdateChapters(self):
+        # refreshing chapters listing, in order
+        self.listing.DeleteAllItems()
+        for i, t in enumerate(sorted(self.chapters)): 
+            self.listing.InsertStringItem(i, str(t))
+            self.listing.SetStringItem(i, 1, self.chapters[t])
+        
+    def SetStart(self, ev):
+        self.start = self.controlzone.timeline.GetValue()
+        self.statusbar.SetStatusText("Start: %s" % self.start, 1)
+        
+    def SetEnd(self, ev):
+        self.end = self.controlzone.timeline.GetValue()
+        self.statusbar.SetStatusText("End: %s" % self.end, 2)
     
 class MyMenuBar(wx.MenuBar):
     """Custom menu bar"""
@@ -241,7 +266,7 @@ class MyStatusBar(wx.StatusBar):
     def __init__(self, *args, **kwargs):
         wx.StatusBar.__init__(self, *args, **kwargs)
         self.SetFieldsCount(3)
-        self.SetStatusWidths([-1, 60, 60])
+        self.SetStatusWidths([-1, 100, 100])
      
 class MyToolBar(wx.ToolBar):
     def __init__(self, *args, **kwargs):
@@ -257,6 +282,9 @@ class MyToolBar(wx.ToolBar):
         self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-pause.png')), "Pause")
         self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-stop.png')), "Stop")
         self.AddSeparator()
+        self.AddSimpleTool(ID_SET_START, wx.Bitmap(r('icons/go-first.png')), "Start")
+        self.AddSimpleTool(ID_SET_END, wx.Bitmap(r('icons/go-last.png')), "End")
+        self.AddSeparator()
         self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap(r('icons/system-log-out.png')), "Exit", "Exit RP")
         self.Realize()
         
@@ -271,8 +299,8 @@ class ChapterBar(wx.ToolBar):
     def __init__(self, *args, **kwargs):
         wx.ToolBar.__init__(self, *args, **kwargs)
         
-        self.AddSimpleTool(ID_ADD_TICK, wx.Bitmap(r('icons/list-add.png')), "Add Chapter")
-        self.AddSimpleTool(ID_RM_TICK, wx.Bitmap(r('icons/list-remove.png')), "Remove Chapter")
+        self.AddSimpleTool(ID_ADD_CHAPTER, wx.Bitmap(r('icons/list-add.png')), "Add Chapter")
+        self.AddSimpleTool(ID_RM_CHAPTER, wx.Bitmap(r('icons/list-remove.png')), "Remove Chapter")
         self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/go-previous.png')), "Previous chapter")
         self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/go-next.png')), "Next chapter")
         self.Realize()
@@ -290,8 +318,8 @@ class ChapterList(wx.ListCtrl):
         self.InsertColumn(0, "Time")
         self.InsertColumn(1, "Chapter Name")
         
-        self.SetColumnWidth(0, 40)
-        self.SetColumnWidth(1, 300)
+        self.SetColumnWidth(0, 50)
+        self.SetColumnWidth(1, 250)
 
 
 class ControlZone(wx.Panel):
@@ -328,7 +356,7 @@ class ControlZone(wx.Panel):
         vbox.Add(hbox1, 1, wx.EXPAND | wx.BOTTOM, 10)
         # vbox.Add(hbox2, 1, wx.EXPAND)
         self.SetSizer(vbox)
-        
+
 class MyApp(wx.App):
     def OnInit(self):
         frame = MyFrame(None, wx.ID_ANY, 'Rehearsal Player')

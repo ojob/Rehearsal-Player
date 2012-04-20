@@ -58,6 +58,7 @@ class MyFrame(wx.Frame):
         #--------------------------------------------------- adding content
         # building components
         self.toolbar = MyToolBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
+        self.mediabar = MediaBar(self, wx.ID_ANY, style=wx.TB_HORIZONTAL)
         self.controlzone = ControlZone(self, wx.ID_ANY)
         self.chapterbar = ChapterBar(self, wx.ID_ANY, style=wx.TB_VERTICAL)
         self.listing = ChapterList(self, wx.ID_ANY, style=wx.LC_REPORT|wx.LC_VRULES)
@@ -65,6 +66,7 @@ class MyFrame(wx.Frame):
         # positioning them around
         sizer = wx.BoxSizer(wx.VERTICAL)
         sizer.Add(self.toolbar)
+        sizer.Add(self.mediabar)
         sizer.Add(self.controlzone, flag=wx.EXPAND | wx.BOTTOM | wx.TOP)
         
         vb = wx.BoxSizer(wx.HORIZONTAL)
@@ -209,11 +211,13 @@ class MyMenuBar(wx.MenuBar):
         
         self.filemenu = FileMenu()
         self.editmenu = EditMenu()
+        self.playmenu = PlayMenu()
         self.showmenu = ShowMenu()
         self.helpmenu = HelpMenu()
         
         self.Append(self.filemenu, '&File')
         self.Append(self.editmenu, '&Edit')
+        self.Append(self.playmenu, '&Play')
         self.Append(self.showmenu, '&Show')
         self.Append(self.helpmenu, '&Help')
 
@@ -244,6 +248,18 @@ class EditMenu(wx.Menu):
         self.AppendSeparator()
         self.Append(wx.ID_PROPERTIES, "&Properties", "Edit project properties")
 
+class PlayMenu(wx.Menu):
+    """Custom play menu"""
+    def __init__(self, *args, **kwargs):
+        wx.Menu.__init__(self, *args, **kwargs)
+        self.Append(wx.ID_ANY, "&Play" )
+        self.Append(wx.ID_ANY, "P&ause")
+        self.Append(wx.ID_ANY, "&Stop")
+        self.AppendSeparator()
+        self.Append(wx.ID_ANY, "Play &All")
+        self.AppendSeparator()
+        self.Append(wx.ID_ANY, "&Repeat", kind=wx.ITEM_CHECK)
+        
 class ShowMenu(wx.Menu):
     """Custom display settings menu"""
     def __init__(self, *args, **kwargs):
@@ -278,6 +294,13 @@ class MyToolBar(wx.ToolBar):
         self.AddSimpleTool(wx.ID_UNDO, wx.Bitmap(r('icons/edit-undo.png')), "Undo", "Cancel action")
         self.AddSimpleTool(wx.ID_REDO, wx.Bitmap(r('icons/edit-redo.png')), "Undo", "Redo action")
         self.AddSeparator()
+        self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap(r('icons/system-log-out.png')), "Exit", "Exit RP")
+        self.Realize()
+
+class MediaBar(wx.ToolBar):
+    def __init__(self, *args, **kwargs):
+        wx.ToolBar.__init__(self, *args, **kwargs)
+        
         self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-start.png')), "Play")
         self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-pause.png')), "Pause")
         self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-stop.png')), "Stop")
@@ -285,8 +308,8 @@ class MyToolBar(wx.ToolBar):
         self.AddSimpleTool(ID_SET_START, wx.Bitmap(r('icons/go-first.png')), "Start")
         self.AddSimpleTool(ID_SET_END, wx.Bitmap(r('icons/go-last.png')), "End")
         self.AddSeparator()
-        self.AddSimpleTool(wx.ID_EXIT, wx.Bitmap(r('icons/system-log-out.png')), "Exit", "Exit RP")
-        self.Realize()
+        self.AddSimpleTool(wx.ID_ANY, wx.Bitmap(r('icons/media-playback-repeat.png')), "Repeat", "Repeat selection", True)
+        
         
 class QuitBar(wx.ToolBar):
     def __init__(self, *args, **kwargs):

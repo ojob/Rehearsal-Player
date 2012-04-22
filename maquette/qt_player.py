@@ -46,17 +46,18 @@ class MainWindow2(QMainWindow):
     def __init__(self):
         QMainWindow.__init__(self)
         
-        # initializing player
-        fn = "/home/shared/musique/Maxime Le Forestier - Ne quelque part.mp3"
-        self.media_player = Player(fn)
+        # adding controls
+        self.controls = Controls()
+        self.setCentralWidget(self.controls)
         
-        # adding some stuff to window
+        # window parameters
         self.statusBar().showMessage('Ready')
-        self.setGeometry(300, 300, 250, 150)
         self.setWindowIcon(QtGui.QIcon('../icons/media-playback-start.png'))        
         self.setWindowTitle('mini-player')    
-        self.show()
         
+        # rendering
+        self.setGeometry(300, 300, 250, 150)
+        self.show()
         
         # creating toolbar
         playAction = QtGui.QAction(QtGui.QIcon('../icons/media-playback-start.png'), 'Play', self)
@@ -74,19 +75,55 @@ class MainWindow2(QMainWindow):
         self.toolbar.addAction(stopAction)
         self.toolbar.addAction(exitAction)
         
+        
         # binding signals to player
-        playAction.triggered.connect(self.media_player.play)
-        pauseAction.triggered.connect(self.media_player.pause)
-        nextAction.triggered.connect(self.media_player.ff)
-        prevAction.triggered.connect(self.media_player.fr)
-        stopAction.triggered.connect(self.media_player.stop)
+        playAction.triggered.connect(self.controls.media_player.play)
+        pauseAction.triggered.connect(self.controls.media_player.pause)
+        nextAction.triggered.connect(self.controls.media_player.ff)
+        prevAction.triggered.connect(self.controls.media_player.fr)
+        stopAction.triggered.connect(self.controls.media_player.stop)
         exitAction.triggered.connect(QtGui.qApp.quit)
         
-        self.media_player.tick.connect(self.update_status)
+
+        
         
     def update_status(self, t):
         self.statusBar().showMessage(str(t))
 
+class Controls(QtGui.QWidget):
+    def __init__(self):
+        QtGui.QWidget.__init__(self)
+        
+        # initializing player
+        fn = "/home/shared/musique/Maxime Le Forestier - Ne quelque part.mp3"
+        self.media_player = Player(fn)
+        self.slider = Phonon.SeekSlider(self.media_player , self)
+        #ew = self.media_player.ew
+       
+        
+        sld = QtGui.QSlider(QtCore.Qt.Horizontal, self)
+        self.label = QtGui.QLabel(self)
+        self.label.setPixmap(QtGui.QPixmap('../icons/audio-volume-muted.png'))
+        
+        hbox = QtGui.QHBoxLayout()
+        hbox.addWidget(self.slider)
+        #hbox.addWidget(ew)
+        hbox.addWidget(sld)
+        hbox.addWidget(self.label)
+        self.setLayout(hbox)
+        
+        sld.valueChanged[int].connect(self.changeValue)
+    
+    def changeValue(self, value):
+        if value == 0:
+            self.label.setPixmap(QtGui.QPixmap('../icons/audio-volume-muted.png'))
+        elif value > 0 and value <= 30:
+            self.label.setPixmap(QtGui.QPixmap('../icons/audio-volume-low.png'))
+        elif value > 30 and value < 80:
+            self.label.setPixmap(QtGui.QPixmap('../icons/audio-volume-medium.png'))
+        else:
+            self.label.setPixmap(QtGui.QPixmap('../icons/audio-volume-high.png'))
+    
 class Player(Phonon.MediaObject):
     def __init__(self, fn):
         Phonon.MediaObject.__init__(self)
@@ -109,13 +146,23 @@ class Player(Phonon.MediaObject):
     def _activate(self, effect):
         e = Phonon.Effect(effect)
         s = e.parameters()[0]
-        e.setParameterValue(s, QtCore.QVariant(2.0))
+        
+        # set speed
+        #e.setParameterValue(s, QtCore.QVariant(2.0))
+        
+        # print current status
         print [float(i.toString()) for i in ( e.parameterValue(s), s.minimumValue(), s.maximumValue())]
-        self.path.insertEffect(e)
+        print e.description().description()
+        
+        
+        # insert effect in rendering path
+        #self.path.insertEffect(e)
+        #self.ew = Phonon.EffectWidget(e)
+        
         
     def ff(self):
-        """just seek for 10 secs forward"""
-        target_t = self.currentTime() + 1000
+        """just seek for 20 secs forward"""
+        target_t = self.currentTime() + 20000
         total_t = self.totalTime()
         if target_t < total_t and self.isSeekable():
             print "seekable, going to %s" % target_t
@@ -124,8 +171,8 @@ class Player(Phonon.MediaObject):
             self.stop()
             
     def fr(self):
-        """just seek for 1 secs backward"""
-        target_t = self.currentTime() - 1000
+        """just seek for 20 secs backward"""
+        target_t = self.currentTime() - 20000
         if self.isSeekable():
             print "seekable, going to %s" % max(0, target_t)
             self.seek(max(0, target_t))

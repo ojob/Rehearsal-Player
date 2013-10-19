@@ -1,0 +1,481 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ui version="4.0">
+ <class>MainWindow</class>
+ <widget class="QMainWindow" name="MainWindow">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>633</width>
+    <height>480</height>
+   </rect>
+  </property>
+  <property name="windowTitle">
+   <string>MainWindow</string>
+  </property>
+  <widget class="QWidget" name="centralwidget">
+   <property name="autoFillBackground">
+    <bool>false</bool>
+   </property>
+   <widget class="QWidget" name="verticalLayoutWidget">
+    <property name="geometry">
+     <rect>
+      <x>10</x>
+      <y>10</y>
+      <width>611</width>
+      <height>421</height>
+     </rect>
+    </property>
+    <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,1">
+     <property name="sizeConstraint">
+      <enum>QLayout::SetMinAndMaxSize</enum>
+     </property>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout_3">
+       <item>
+        <widget class="QToolButton" name="button_open_file">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="button_play">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="button_pause">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="button_stop">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QPushButton" name="show_boorkmarks">
+         <property name="acceptDrops">
+          <bool>true</bool>
+         </property>
+         <property name="text">
+          <string>signets</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="button_prev_bookmark">
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <widget class="QToolButton" name="button_next_bookmark">
+         <property name="acceptDrops">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+       <item>
+        <spacer name="horizontalSpacer">
+         <property name="orientation">
+          <enum>Qt::Horizontal</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>40</width>
+           <height>20</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item>
+        <widget class="QToolButton" name="stop">
+         <property name="acceptDrops">
+          <bool>false</bool>
+         </property>
+         <property name="text">
+          <string>...</string>
+         </property>
+        </widget>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0,0">
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_3">
+         <item>
+          <widget class="Phonon::SeekSlider" name="seek"/>
+         </item>
+         <item>
+          <layout class="QHBoxLayout" name="horizontalLayout_2" stretch="0,0,0">
+           <item>
+            <widget class="QLabel" name="total_time">
+             <property name="text">
+              <string>2:10</string>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="time_elapsed">
+             <property name="text">
+              <string>0:35</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignCenter</set>
+             </property>
+            </widget>
+           </item>
+           <item>
+            <widget class="QLabel" name="time_left">
+             <property name="text">
+              <string>-1:35</string>
+             </property>
+             <property name="alignment">
+              <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_4">
+         <item>
+          <widget class="Phonon::VolumeSlider" name="volume">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+           <property name="pageStep">
+            <number>10</number>
+           </property>
+           <property name="muteVisible">
+            <bool>true</bool>
+           </property>
+           <property name="iconSize">
+            <size>
+             <width>16</width>
+             <height>16</height>
+            </size>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QLabel" name="label_2">
+           <property name="text">
+            <string/>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+       <item>
+        <layout class="QVBoxLayout" name="verticalLayout_2">
+         <item>
+          <widget class="QLabel" name="label">
+           <property name="text">
+            <string>Speed</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QDoubleSpinBox" name="speed">
+           <property name="prefix">
+            <string/>
+           </property>
+           <property name="decimals">
+            <number>1</number>
+           </property>
+           <property name="minimum">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="maximum">
+            <double>10.000000000000000</double>
+           </property>
+           <property name="singleStep">
+            <double>0.100000000000000</double>
+           </property>
+           <property name="value">
+            <double>1.000000000000000</double>
+           </property>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </item>
+     <item>
+      <widget class="QGroupBox" name="groupBox">
+       <property name="title">
+        <string>Signets</string>
+       </property>
+       <property name="flat">
+        <bool>false</bool>
+       </property>
+       <property name="checkable">
+        <bool>false</bool>
+       </property>
+       <widget class="QToolButton" name="bookmark_add">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>20</y>
+          <width>23</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="bookmark_del">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>60</y>
+          <width>23</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QToolButton" name="bookmark_update">
+        <property name="geometry">
+         <rect>
+          <x>20</x>
+          <y>110</y>
+          <width>23</width>
+          <height>24</height>
+         </rect>
+        </property>
+        <property name="text">
+         <string>...</string>
+        </property>
+       </widget>
+       <widget class="QTableWidget" name="bookmarks">
+        <property name="geometry">
+         <rect>
+          <x>50</x>
+          <y>20</y>
+          <width>561</width>
+          <height>281</height>
+         </rect>
+        </property>
+        <property name="sizePolicy">
+         <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+          <horstretch>0</horstretch>
+          <verstretch>0</verstretch>
+         </sizepolicy>
+        </property>
+        <property name="sortingEnabled">
+         <bool>true</bool>
+        </property>
+        <property name="rowCount">
+         <number>3</number>
+        </property>
+        <property name="columnCount">
+         <number>3</number>
+        </property>
+        <attribute name="horizontalHeaderStretchLastSection">
+         <bool>true</bool>
+        </attribute>
+        <attribute name="verticalHeaderStretchLastSection">
+         <bool>false</bool>
+        </attribute>
+        <row/>
+        <row/>
+        <row/>
+        <column>
+         <property name="text">
+          <string>Temps</string>
+         </property>
+         <property name="textAlignment">
+          <set>AlignHCenter|AlignVCenter|AlignCenter</set>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Nom</string>
+         </property>
+         <property name="textAlignment">
+          <set>AlignLeft|AlignVCenter</set>
+         </property>
+        </column>
+        <column>
+         <property name="text">
+          <string>Commentaire</string>
+         </property>
+        </column>
+        <item row="0" column="0">
+         <property name="text">
+          <string>0:25</string>
+         </property>
+        </item>
+        <item row="0" column="1">
+         <property name="text">
+          <string>Solo filles</string>
+         </property>
+        </item>
+        <item row="0" column="2">
+         <property name="text">
+          <string>Entrée gauche salle</string>
+         </property>
+        </item>
+        <item row="1" column="0">
+         <property name="text">
+          <string>0:45</string>
+         </property>
+        </item>
+        <item row="1" column="1">
+         <property name="text">
+          <string>Solo garçons</string>
+         </property>
+        </item>
+        <item row="2" column="0">
+         <property name="text">
+          <string>1:32</string>
+         </property>
+        </item>
+        <item row="2" column="1">
+         <property name="text">
+          <string>Duo</string>
+         </property>
+        </item>
+       </widget>
+      </widget>
+     </item>
+    </layout>
+   </widget>
+  </widget>
+  <widget class="QMenuBar" name="menubar">
+   <property name="geometry">
+    <rect>
+     <x>0</x>
+     <y>0</y>
+     <width>633</width>
+     <height>24</height>
+    </rect>
+   </property>
+   <widget class="QMenu" name="menuFichier">
+    <property name="title">
+     <string>Fichier</string>
+    </property>
+    <addaction name="actionNouveau"/>
+    <addaction name="actionOuvrir"/>
+    <addaction name="actionFichiers_r_cents"/>
+    <addaction name="separator"/>
+    <addaction name="actionEnregistrer"/>
+    <addaction name="actionEnregistrer_sous"/>
+    <addaction name="separator"/>
+    <addaction name="actionFermer"/>
+    <addaction name="actionQuitter"/>
+   </widget>
+   <widget class="QMenu" name="menu_propos">
+    <property name="title">
+     <string>À propos</string>
+    </property>
+    <addaction name="actionAide"/>
+    <addaction name="separator"/>
+    <addaction name="action_propos"/>
+   </widget>
+   <widget class="QMenu" name="menuSignets">
+    <property name="title">
+     <string>Signets</string>
+    </property>
+    <addaction name="actionNouveau_2"/>
+    <addaction name="actionTout_supprimer"/>
+   </widget>
+   <addaction name="menuFichier"/>
+   <addaction name="menuSignets"/>
+   <addaction name="menu_propos"/>
+  </widget>
+  <widget class="QStatusBar" name="statusbar"/>
+  <action name="action_propos">
+   <property name="text">
+    <string>À propos</string>
+   </property>
+  </action>
+  <action name="actionNouveau">
+   <property name="text">
+    <string>Nouveau...</string>
+   </property>
+  </action>
+  <action name="actionOuvrir">
+   <property name="text">
+    <string>Ouvrir...</string>
+   </property>
+  </action>
+  <action name="actionEnregistrer">
+   <property name="text">
+    <string>Enregistrer</string>
+   </property>
+  </action>
+  <action name="actionEnregistrer_sous">
+   <property name="text">
+    <string>Enregistrer sous...</string>
+   </property>
+  </action>
+  <action name="actionFichiers_r_cents">
+   <property name="text">
+    <string>Fichiers récents...</string>
+   </property>
+  </action>
+  <action name="actionFermer">
+   <property name="text">
+    <string>Fermer</string>
+   </property>
+  </action>
+  <action name="actionQuitter">
+   <property name="text">
+    <string>Quitter</string>
+   </property>
+  </action>
+  <action name="actionAide">
+   <property name="text">
+    <string>Aide</string>
+   </property>
+  </action>
+  <action name="actionNouveau_2">
+   <property name="text">
+    <string>Nouveau</string>
+   </property>
+  </action>
+  <action name="actionTout_supprimer">
+   <property name="text">
+    <string>Tout supprimer</string>
+   </property>
+  </action>
+ </widget>
+ <customwidgets>
+  <customwidget>
+   <class>Phonon::SeekSlider</class>
+   <extends>QWidget</extends>
+   <header location="global">phonon/seekslider.h</header>
+  </customwidget>
+  <customwidget>
+   <class>Phonon::VolumeSlider</class>
+   <extends>QWidget</extends>
+   <header location="global">phonon/volumeslider.h</header>
+  </customwidget>
+ </customwidgets>
+ <resources/>
+ <connections/>
+</ui>

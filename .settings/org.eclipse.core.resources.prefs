@@ -1,3 +1,4 @@
 eclipse.preferences.version=1
 encoding//maquette/qt_player.py=utf-8
-encoding//src/player.py=utf-8
+encoding//src/rp.py=utf-8
+encoding//src/rp_ui.py=utf-8
